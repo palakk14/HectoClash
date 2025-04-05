@@ -16,17 +16,28 @@
         {% endfor %}
     </ul>
 
+    {% if spectator %}
+        <p style="color: gray;"><i>You are spectating this game. You cannot send messages.</i></p>
+    {% endif %}
+
     <h3>Game Status:</h3>
     <p id="timer">Waiting for players...</p>
     <h2 id="message"></h2>
 
+    <h3>Game Timer:</h3>
+    <h2 id="game-timer" style="display: none;">Time Left: <span id="game-time">300</span> seconds</h2>
+
     <h3>Chat:</h3>
-    <div id="chat-box"></div>
-    <input type="text" id="chat-message" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
+    <div id="chat-box" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
+
+    {% if not spectator %}
+        <input type="text" id="chat-message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    {% endif %}
 
     <script>
         var socket = io();
+        var isSpectator = {{ 'true' if spectator else 'false' }};
 
         socket.on("update_players", function(data) {
             var playersList = document.getElementById("players-list");
@@ -43,15 +54,28 @@
         socket.on("game_start", function(data) {
             document.getElementById("timer").innerText = "Game Started!";
             document.getElementById("message").innerText = data.message;
+            document.getElementById("game-timer").style.display = "block";
+        });
+
+        socket.on("update_game_timer", function(data) {
+            document.getElementById("game-time").innerText = data.time;
+        });
+
+        socket.on("game_over", function(data) {
+            document.getElementById("game-timer").style.display = "none";
+            document.getElementById("message").innerText = data.message;
         });
 
         socket.on("message", function(data) {
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML += `<p><b>${data.name}:</b> ${data.message}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
         });
 
         function sendMessage() {
+            if (isSpectator) return;
             var message = document.getElementById("chat-message").value;
+            if (message.trim() === "") return;
             socket.emit("message", { message: message });
             document.getElementById("chat-message").value = "";
         }
