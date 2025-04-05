@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HectoClash</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #0f0f1a;
+      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow-strip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(15deg);
+      width: 180%;
+      height: 280px;
+      background: radial-gradient(ellipse at center, rgba(181,139,255,0.2), transparent 70%);
+      filter: blur(35px);
+      z-index: 0;
+      animation: moveGlow 6s infinite alternate ease-in-out;
+    }
+
+    @keyframes moveGlow {
+      0% { transform: translate(-50%, -50%) rotate(15deg); }
+      100% { transform: translate(-50%, -47%) rotate(15deg); }
+    }
+
+    .hecto-heading {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 6rem;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 60px;
+      letter-spacing: 4px;
+      text-shadow: 0 0 25px #a78bfa, 0 0 45px #a78bfa;
+      animation: pulseGlow 2.5s ease-in-out infinite;
+      z-index: 1;
+      max-width: 780px;
+      width: 100%;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        text-shadow: 0 0 20px #a78bfa, 0 0 35px #a78bfa;
+      }
+      50% {
+        text-shadow: 0 0 35px #b58bff, 0 0 60px #b58bff;
+      }
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 780px;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1;
+    }
+
+    .form-msg {
+      font-size: 1.5rem;
+      color: #ddd;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .form-container input {
+      width: 100%;
+      padding: 20px;
+      border: none;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #eee;
+      font-size: 1.5rem;
+    }
+
+    .form-container input::placeholder {
+      color: #ccc;
+    }
+
+    .form-container button {
+      width: 100%;
+      background: linear-gradient(to right, #5f6bff, #8a64ff);
+      color: white;
+      border: none;
+      padding: 14px 18px;
+      border-radius: 20px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 0 12px rgba(138, 100, 255, 0.4), 0 0 20px rgba(95, 107, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .form-container button:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 0 16px rgba(138, 100, 255, 0.6),
+        0 0 28px rgba(95, 107, 255, 0.4),
+        0 12px 35px rgba(138, 100, 255, 0.6);
+    }
+
+    .form-container button i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .side-icon {
+      position: absolute;
+      width: 85px;
+      height: 85px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2.2rem;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s ease;
+      z-index: 1;
+    }
+
+    .side-icon:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 28px #b58bff;
+    }
+
+    .side-icon-left { left: 20px; }
+    .side-icon-right { right: 20px; }
+
+    .top1 { top: 100px; }
+    .top2 { top: 220px; }
+    .top3 { top: 340px; }
+
+    .alert {
+      margin-top: 25px;
+      padding: 15px 20px;
+      background: rgba(255, 80, 80, 0.12);
+      color: #ff7a7a;
+      border-radius: 12px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-strip"></div>
+
+  <h1 class="hecto-heading">HectoClash</h1>
+
+  <div class="form-container">
+    <form method="POST" class="form-container">
+        <p class="form-msg">Join or create a room</p>
+        <input type="text" name="code" placeholder="Enter Room Code" />
+      
+        <button type="submit" name="play" value="1">
+          <i data-lucide="play"></i> Quick Play
+        </button>
+      
+        <button type="submit" name="join" value="1">
+          <i data-lucide="users"></i> Join Room
+        </button>
+      
+        <button type="submit" name="create" value="1">
+          <i data-lucide="users"></i> Create Room
+        </button>
+      
+        <button type="submit" name="spectate" value="1">
+          <i data-lucide="eye"></i> Spectate
+        </button>
+      
+        <button type="submit" name="browse_rooms" value="1">
+          <i data-lucide="search"></i> Browse Room
+        </button>
+      </form>
+  </div>
+
+  <!-- Side Icons -->
+  <div class="side-icon side-icon-left top1">🏆</div>
+  <div class="side-icon side-icon-left top2">⚔️</div>
+  <div class="side-icon side-icon-left top3">📢</div>
+
+  <div class="side-icon side-icon-right top1">🛡️</div>
+  <div class="side-icon side-icon-right top2">📅</div>
+  <div class="side-icon side-icon-right top3">❓</div>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+
+</body>
+</html>
