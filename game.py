@@ -1,5 +1,7 @@
 import random
 
+s=None
+
 excluded_numbers = {
     112117, 114123, 115567, 115827, 116567, 121143,
     121581, 131116, 141171, 156567, 167181, 167451,
@@ -33,17 +35,21 @@ excluded_numbers = {
 
 
 def generate_random_number():
+    global s
     """Generate a random 6-digit number excluding specific ones."""
     while True:
         num = random.randint(100000, 999999)
         if num not in excluded_numbers:
-            return str(num)
+            s=str(num)
+            return s
         
 def is_valid_solution(expression):
+    global s
     """Check if the user's solution evaluates to 100."""
     try:
         sanitized_expr = expression.replace("^", "**")  # Convert exponentiation
         result = eval(sanitized_expr, {"__builtins__": None}, {})  # Safe eval
         return result == 100
     except Exception:
-        return False        
+        return False  
+      

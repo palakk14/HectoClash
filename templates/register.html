@@ -108,13 +108,47 @@
       transform: translateY(-2px);
       box-shadow: 0 0 18px rgba(138, 100, 255, 0.6);
     }
+
+    .error-message,
+    .flash-message {
+      background: rgba(255, 0, 77, 0.2);
+      color: #ff4f87;
+      padding: 10px 15px;
+      border-left: 4px solid #ff4f87;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .error-message {
+      display: none;
+    }
+
+    .error-visible {
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="glow-strip"></div>
   <div class="card">
     <h1>Register</h1>
-    <form method="POST">
+
+    <!-- Flash Message from Flask -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash-message" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Client-side Error Box -->
+    <div id="errorBox" class="error-message"></div>
+
+    <form id="registerForm" method="POST" novalidate>
       <label for="name">Name</label>
       <input type="text" id="name" name="name" required />
 
@@ -127,5 +161,38 @@
       <button type="submit" class="btn">Register</button>
     </form>
   </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const errorBox = document.getElementById('errorBox');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      errorBox.classList.remove('error-visible');
+      errorBox.textContent = '';
+
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      if (!name || !email || !password) {
+        showError("All fields are required.");
+        return;
+      }
+
+      if (password.length < 6) {
+        showError("Password must be at least 6 characters long.");
+        return;
+      }
+
+      form.submit(); // Continue to submit
+    });
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.classList.add('error-visible');
+    }
+  </script>
 </body>
 </html>

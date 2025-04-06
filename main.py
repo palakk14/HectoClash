@@ -86,6 +86,7 @@ def home():
         play = request.form.get("play", False)
         spectate = request.form.get("spectate", False)
         browse_rooms = request.form.get("browse_rooms", False)
+        
 
         if request.form.get("leaderboard"):
             print("Leaderboard clicked!")
@@ -94,6 +95,10 @@ def home():
         if request.form.get("profile"):
             print("profile clicked!")
             return redirect(url_for("profile"))
+        
+        if request.form.get("rule"):
+            print("profile clicked!")
+            return redirect(url_for("rule"))
 
 
 
@@ -165,6 +170,10 @@ def profile():
         return "User not found", 404
 
     return render_template('profile.html', user=user)
+
+@app.route('/rule')
+def rule():
+    return render_template("rule.html")
 
 @app.route("/browse")
 def browse_spectate():
