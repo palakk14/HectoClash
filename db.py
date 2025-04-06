@@ -2,6 +2,7 @@ import psycopg2
 import bcrypt
 from psycopg2 import pool
 
+
 # hostname = "localhost"
 # database = "hectoc"
 # username = "ace"
@@ -9,12 +10,27 @@ from psycopg2 import pool
 # port_id = 5432
 
 
+def get_db_connection():
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="secrets",
+            user="postgres",
+            password="your_new_password",
+            port=5432
+        )
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return None
+
+
 def create_table():
     conn = None
     cur = None
     try:
         conn = psycopg2.connect(
-        dbname="postgres",
+        dbname="secrets",
         user="postgres",
         password="your_new_password",
         host="localhost",
@@ -44,11 +60,11 @@ def is_email_exists(email):
     cur = None
     try:
         conn = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="your_new_password",
-            host="localhost",
-            port="5432")
+       host="localhost",
+    database="secrets",
+    user="postgres",
+    password="your_new_password",
+    port=5432)
         
         cur = conn.cursor()
         
@@ -75,11 +91,11 @@ def store(name, email, password):
     conn = None
     cur = None
     conn = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="your_new_password",
-            host="localhost",
-            port="5432")
+    host="localhost",
+    database="secrets",
+    user="postgres",
+    password="your_new_password",
+    port=5432)
         
     cur = conn.cursor()
     score=0
@@ -97,17 +113,18 @@ def store(name, email, password):
     cur.close()
         
     conn.close()
+      
             
 def valid_user(email, password):
     conn = None
     cur = None
     try:
         conn = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="your_new_password",
-            host="localhost",
-            port="5432"
+    host="localhost",
+    database="secrets",
+    user="postgres",
+    password="your_new_password",
+    port=5432
         )
         
         cur = conn.cursor()
@@ -142,11 +159,11 @@ def getname(email):
     cur = None
     try:
         conn = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="your_new_password",
-            host="localhost",
-            port="5432"
+    host="localhost",
+    database="secrets",
+    user="postgres",
+    password="your_new_password",
+    port=5432
         )
         
         cur = conn.cursor()
@@ -169,4 +186,59 @@ def getname(email):
             cur.close()
         if conn is not None:
             conn.close()
-     
+
+def fetch_user_by_email(email):
+    conn = get_db_connection()
+    if conn is None:
+        return None, "Database connection failed."
+
+    try:
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor.execute("SELECT * FROM player WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        return user, None
+    finally:
+        cursor.close()
+        conn.close()
+        
+def update_user_score(email, score):
+    """Update the user's score by adding the new score to their existing score"""
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="secrets",
+            user="postgres",
+            password="your_new_password",
+            port=5432
+        )
+        
+        cur = conn.cursor()
+        
+        # First, get the current score
+        query = "SELECT score FROM player WHERE email = %s"
+        cur.execute(query, (email,))
+        result = cur.fetchone()
+        
+        if result is not None:
+            current_score = result[0] if result[0] is not None else 0
+            new_score = current_score + score
+            
+            # Update the score in the database
+            update_query = "UPDATE player SET score = %s WHERE email = %s"
+            cur.execute(update_query, (new_score, email))
+            conn.commit()
+            print(f"Updated score for {email}: {current_score} + {score} = {new_score}")
+            return True
+        
+        return False
+    except Exception as error:
+        print(f"Error updating score: {error}")
+        return False
+    finally:
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()        
+    

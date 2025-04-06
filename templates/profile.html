@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Profile</title>
+  <style>
+    body {
+      background-color: #0f0f1a;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .profile-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(167, 139, 250, 0.3);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .profile-card h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #a78bfa;
+      text-align: center;
+    }
+
+    .profile-field {
+      margin: 15px 0;
+      font-size: 1.2rem;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #ccc;
+    }
+
+    .home-button {
+      margin-top: 30px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #a78bfa;
+      color: #0f0f1a;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+      transition: background-color 0.3s ease;
+    }
+
+    .home-button:hover {
+      background-color: #c4b5fd;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-card">
+    <h2>👤 User Profile</h2>
+    <div class="profile-field"><span class="label">Name:</span> {{ user.name }}</div>
+    <div class="profile-field"><span class="label">Email:</span> {{ user.email }}</div>
+    <div class="profile-field"><span class="label">Score:</span> {{ user.score }}</div>
+  </div>
+  
+  <a href="/home" class="home-button">🏠 Back to Home</a>
+</body>
+</html>

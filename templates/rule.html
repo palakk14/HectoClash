@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rule Book</title>
+  <style>
+    /* Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #2F3B35;
+      min-height: 100vh;
+      color: #2F3B35;
+    }
+
+    .container {
+      min-height: 100vh;
+      padding: 2rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Background Decorations */
+    .decoration {
+      position: absolute;
+      width: 12rem;
+      height: 12rem;
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+
+    .decoration-top {
+      top: 0;
+      right: 0;
+      background-color: #FFB84C;
+      opacity: 0.5;
+    }
+
+    .decoration-bottom {
+      bottom: 0;
+      left: 0;
+      background-color: #FF8F8F;
+      opacity: 0.5;
+    }
+
+    /* Grid Background */
+    .grid-background {
+      position: fixed;
+      inset: 0;
+      background-color: #2F3B35;
+      opacity: 0.1;
+      background-image: 
+        linear-gradient(#F5E6D3 1px, transparent 1px),
+        linear-gradient(90deg, #F5E6D3 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: -1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      justify-content: center;
+    }
+
+    .book-icon {
+      width: 3rem;
+      height: 3rem;
+      color: #F5E6D3;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #F5E6D3;
+      text-align: center;
+    }
+
+    /* Rules Container */
+    .rules-container {
+      width: 100%;
+      max-width: 48rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Rule Card */
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background-color: #F5E6D3;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .rule:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .rule p {
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #2F3B35;
+    }
+
+    /* Rule Numbers */
+    .rule-number {
+      width: 3.5rem;
+      height: 3.5rem;
+      flex-shrink: 0;
+      background-color: #FF8F8F;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .circle {
+      border-radius: 50%;
+    }
+
+    .square {
+      border-radius: 0.5rem;
+    }
+
+    .triangle {
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+
+    .hexagon {
+      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    }
+
+    .pentagon {
+      clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    }
+
+    .star {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    .flower {
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .flower::before {
+      content: '★';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      .container {
+        padding: 1rem;
+      }
+
+      header {
+        margin-bottom: 2rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .rule p {
+        font-size: 1rem;
+      }
+
+      .rule-number {
+        width: 3rem;
+        height: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Background Decorations -->
+    <div class="decoration decoration-top"></div>
+    <div class="decoration decoration-bottom"></div>
+    
+    <!-- Header -->
+    <header>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="book-icon">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+      <h1>RULE BOOK</h1>
+    </header>
+
+    <!-- Rules Container -->
+    <div class="rules-container">
+      <div class="rule">
+        <div class="rule-number hexagon">1</div>
+        <p>
+            <strong>1. 🔢 Objective:</strong>
+            <ul>
+              <li>Each duel presents players with a unique six-digit sequence (e.g., <code>123456</code>).</li>
+              <li>Players must insert mathematical operators (<code>+, -, ×, ÷, ^</code>) and parentheses.</li>
+              <li>The goal is to make the expression equal to <strong>100</strong>.</li>
+              <li>Digits must remain in the given order and cannot be rearranged.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number square">2</div>
+        <p>
+            <strong>2. ⏱ Time Limit:</strong>
+            <ul>
+              <li>Each duel lasts exactly <strong>60 seconds</strong>.</li>
+              <li>A countdown timer is shown on screen.</li>
+              <li>When time runs out, the round ends—even if an answer is in progress.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number hexagon">3</div>
+        <p>
+            <strong>3. 🏆 Scoring System:</strong>
+            <ul>
+              <li><strong>Base Score:</strong> 100 points for a correct expression.</li>
+              <li><strong>Time-Based Bonus:</strong> Score decreases by <strong>1 point per second</strong> elapsed.</li>
+              <li>Incorrect answers score 0 and may add a minor time penalty.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number circle">4</div>
+        <p>
+            <strong>4. ⚔ Real-Time Duels:</strong>
+            <ul>
+              <li>Players are matched head-to-head in real-time.</li>
+              <li>The player with the correct solution wins; if both solve, the faster player wins.</li>
+              <li>If neither solves, no one wins the round.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number flower">5</div>
+        <p>
+            <strong>5. 🧠 Puzzle Generation:</strong>
+            <ul>
+              <li>Each puzzle is randomly generated and solvable.</li>
+              <li>Only digits <strong>1–9</strong> are used, in a 6-digit sequence.</li>
+              <li>The same sequence is shown to both players in a duel.</li>
+            </ul>
+          </p>
+      </div>
+
+      <div class="rule">
+        <div class="rule-number triangle">6</div>
+        <p>
+            <strong>6. 📊 Rankings & Leaderboards:</strong>
+            <ul>
+              <li>Win duels and solve puzzles correctly to earn ranking points.</li>
+              <li>Leaderboards update in real-time.</li>
+              <li>Ranks are based on win ratio, speed, and solution accuracy.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number pentagon">7</div>
+        <p>
+            <strong>7. 👁 Spectator Mode:</strong>
+            <ul>
+              <li>Users can spectate ongoing duels live.</li>
+              <li>Spectators see players' inputs and timers but cannot interact.</li>
+              <li>Ideal for learning and community engagement.</li>
+            </ul>
+          </p>
+        
+      </div>
+
+      <div class="rule">
+        <div class="rule-number star">8</div>
+
+        <p>
+            <strong>8. 🧾 Post-Duel Insights:</strong>
+            <ul>
+              <li>Players receive a breakdown of their submitted expression.</li>
+              <li>They also see missed optimal solutions and common mistakes.</li>
+              <li>This helps players improve over time and learn new tricks.</li>
+            </ul>
+          </p>
+        
+      </div>
+    </div>
+
+    <!-- Grid Background -->
+    <div class="grid-background"></div>
+  </div>
+</body>
+</html>

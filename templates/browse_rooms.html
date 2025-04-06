@@ -1,46 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Browse Rooms to Spectate</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <meta charset="UTF-8">
+  <title>Browse Rooms to Spectate</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #0f0f1a;
+      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+      color: white;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .glow-strip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(15deg);
+      width: 180%;
+      height: 280px;
+      background: radial-gradient(ellipse at center, rgba(181,139,255,0.2), transparent 70%);
+      filter: blur(35px);
+      z-index: 0;
+      animation: moveGlow 6s infinite alternate ease-in-out;
+    }
+
+    @keyframes moveGlow {
+      0% { transform: translate(-50%, -50%) rotate(15deg); }
+      100% { transform: translate(-50%, -47%) rotate(15deg); }
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 4rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0 40px;
+      letter-spacing: 3px;
+      text-shadow: 0 0 25px #a78bfa, 0 0 45px #a78bfa;
+      animation: pulseGlow 2.5s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        text-shadow: 0 0 20px #a78bfa, 0 0 35px #a78bfa;
+      }
+      50% {
+        text-shadow: 0 0 35px #b58bff, 0 0 60px #b58bff;
+      }
+    }
+
+    .content {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(138, 100, 255, 0.15);
+      z-index: 1;
+    }
+
+    .room-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .room-table thead {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .room-table th, .room-table td {
+      padding: 16px;
+      text-align: center;
+      color: #eee;
+      font-size: 1.1rem;
+    }
+
+    .room-table tbody tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .room-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .button {
+      background: linear-gradient(to right, #5f6bff, #8a64ff);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 12px rgba(138, 100, 255, 0.4);
+      display: inline-block;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 18px rgba(138, 100, 255, 0.6);
+    }
+
+    .buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    p {
+      text-align: center;
+      font-size: 1.2rem;
+      opacity: 0.85;
+      margin-top: 20px;
+    }
+
+  </style>
 </head>
 <body>
-    <div class="content">
-        <h1>Available Rooms</h1>
-        
-        {% if rooms %}
-            <table class="room-table">
-                <thead>
-                    <tr>
-                        <th>Room Code</th>
-                        <th>Players</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for code, room_data in rooms.items() %}
-                    <tr>
-                        <td>{{ code }}</td>
-                        <td>{{ room_data.players|join(", ") }}</td>
-                        <td>{{ room_data.status }}</td>
-                        <td>
-                            <a href="{{ url_for('spectate_room', code=code) }}" class="button">Spectate</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No active rooms available to spectate.</p>
-        {% endif %}
-        
-        <div class="buttons">
-            <a href="{{ url_for('home') }}" class="button">Back to Home</a>
-        </div>
+
+  <div class="glow-strip"></div>
+
+  <h1>Spectate Rooms</h1>
+
+  <div class="content">
+    {% if rooms %}
+      <table class="room-table">
+        <thead>
+          <tr>
+            <th>Room Code</th>
+            <th>Players</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for code, room_data in rooms.items() %}
+          <tr>
+            <td>{{ code }}</td>
+            <td>{{ room_data.players|join(", ") }}</td>
+            <td>{{ room_data.status }}</td>
+            <td>
+              <a href="{{ url_for('spectate_room', code=code) }}" class="button">Spectate</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No active rooms available to spectate.</p>
+    {% endif %}
+
+    <div class="buttons">
+      <a href="{{ url_for('home') }}" class="button">⬅ Back to Home</a>
     </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+
 </body>
 </html>

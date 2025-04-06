@@ -4,7 +4,8 @@ import random
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_socketio import SocketIO, join_room, emit
 from string import ascii_uppercase
-from db import store, valid_user, can_register, create_table, getname
+from db import store, valid_user, can_register, create_table, getname, fetch_user_by_email, update_user_score
+from app import fetch_data
 
 
 app = Flask(__name__)
@@ -12,6 +13,8 @@ app.secret_key = "thisisasupersecretkey"
 socketio = SocketIO(app)
 rooms = {}
 create_table()
+
+# uid =None
 
 @app.route("/", methods=["GET", "POST"])
 def first():
@@ -28,11 +31,13 @@ def first():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    # global uid
     if request.method == "POST":
         name = request.form["name"]
         password = request.form["password"]
         email = request.form["email"]
-        if store(name, password, email)==True:
+        # uid=get_uid(email)
+        if store(name, email, password)==True:
                 session["name"] = name
                 session["email"] = email
                 session.pop("spectator", None)
@@ -82,6 +87,16 @@ def home():
         spectate = request.form.get("spectate", False)
         browse_rooms = request.form.get("browse_rooms", False)
 
+        if request.form.get("leaderboard"):
+            print("Leaderboard clicked!")
+            return redirect(url_for("leaderboard"))
+
+        if request.form.get("profile"):
+            print("profile clicked!")
+            return redirect(url_for("profile"))
+
+
+
         if join or create or play:
             session.pop("spectator", None)
 
@@ -128,6 +143,28 @@ def home():
         return redirect(url_for("room"))
     
     return render_template("home.html")
+
+@app.route('/leaderboard')
+def leaderboard():
+    data, error = fetch_data()
+    if error:
+        return error, 500
+    return render_template('leaderboard.html', leaderboard=data)
+
+@app.route('/profile')
+def profile():
+    email = session.get("email")  # get email from session
+    print("🔎 Session email:", email)
+    if not email:
+        return redirect(url_for('login'))  # Redirect if not logged in
+
+    user, error = fetch_user_by_email(email)  # use your existing function
+    if error:
+        return f"Error: {error}", 500
+    if user is None:
+        return "User not found", 404
+
+    return render_template('profile.html', user=user)
 
 @app.route("/browse")
 def browse_spectate():
@@ -239,11 +276,16 @@ def handle_disconnect():
             if len(rooms[room]["members"]) < 2 and rooms[room].get("game_started", False):
                 emit("player_left", {"message": f"{name} has left the game"}, room=room)
 
+# Add this near the top of your app.py file
+from db import update_user_score
+
+# Then modify your handle_message function to update the database when a player wins
 @socketio.on("message")
 def handle_message(data):
     room = session.get("room")
     name = session.get("name")
     is_spectator = session.get("spectator", False)
+    email = session.get("email")  # Get the player's email from the session
 
     if not room or room not in rooms:
         return
@@ -256,6 +298,7 @@ def handle_message(data):
 
     message = data["message"]
     result = check(message)
+    score = data.get("score", 0)  # Get the submitted score from data
     
     rooms[room]["messages"].append({"name": name, "message": result})
     
@@ -263,11 +306,16 @@ def handle_message(data):
         elapsed_time = rooms[room].get("elapsed_time", 0)
         rooms[room]["winner"] = name
         rooms[room]["winning_time"] = elapsed_time
+        rooms[room]["winning_score"] = score  # Store the winning score
         
         rooms[room]["game_over"] = True
         
         winner_message = f"{name} wins! Time: {elapsed_time} seconds"
-        socketio.emit("game_over", {"message": winner_message}, room=room)
+        socketio.emit("game_over", {"message": winner_message, "winner": name}, room=room)
+        
+        # Update the winner's score in the database
+        if email:
+            update_user_score(email, score)
         
         socketio.start_background_task(cleanup_room, room, 30)
     
@@ -278,7 +326,7 @@ def handle_message(data):
             emit("message", {"name": name, "message": result}, room=sid)
     
     emit("message", {"name": name, "message": result}, room=f"{room}_spectators")
-
+    
 def start_timer(room):
     if room not in rooms:
         return
@@ -294,7 +342,7 @@ def start_timer(room):
     elapsed_time = 0
     rooms[room]["elapsed_time"] = elapsed_time
     
-    while elapsed_time <= 300:  
+    while elapsed_time <= 600:  
         if room not in rooms or rooms.get(room, {}).get("game_over", False):
             break
             
@@ -321,3 +369,10 @@ def check(message):
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
+
+# from app import app2
+
+# if __name__ == "__main__":
+#     app2.run(debug=True)
+
+    

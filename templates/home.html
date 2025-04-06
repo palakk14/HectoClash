@@ -18,14 +18,14 @@
       background-color: #0f0f1a;
       background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
       background-size: cover;
-      min-height: 100vh;
+      height: auto; /* Updated from min-height: 100vh */
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 60px 20px;
       color: white;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden; /* Updated from overflow: hidden */
     }
 
     .glow-strip {
@@ -39,6 +39,7 @@
       filter: blur(35px);
       z-index: 0;
       animation: moveGlow 6s infinite alternate ease-in-out;
+      pointer-events: none; /* Prevent interaction issues */
     }
 
     @keyframes moveGlow {
@@ -169,6 +170,57 @@
       border-radius: 12px;
       font-size: 1.2rem;
     }
+
+    /* Small devices (phones, < 600px) */
+    @media (max-width: 600px) {
+      .hecto-heading {
+        font-size: 3rem;
+        margin-bottom: 40px;
+      }
+
+      .form-msg {
+        font-size: 1.2rem;
+      }
+
+      .form-container input {
+        padding: 14px;
+        font-size: 1.2rem;
+      }
+
+      .form-container button {
+        padding: 12px;
+        font-size: 1.1rem;
+      }
+
+      .side-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.6rem;
+      }
+
+      .top1 { top: 80px; }
+      .top2 { top: 170px; }
+      .top3 { top: 260px; }
+    }
+
+    /* Medium devices (tablets, 600px–1024px) */
+    @media (max-width: 1024px) {
+      .hecto-heading {
+        font-size: 4rem;
+      }
+
+      .form-container {
+        max-width: 90%;
+      }
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 100%;
+    }
+    .no-underline {
+    text-decoration: none;
+  }
   </style>
 </head>
 <body>
@@ -179,39 +231,75 @@
 
   <div class="form-container">
     <form method="POST" class="form-container">
-        <p class="form-msg">Join or create a room</p>
-        <input type="text" name="code" placeholder="Enter Room Code" />
-      
-        <button type="submit" name="play" value="1">
-          <i data-lucide="play"></i> Quick Play
-        </button>
-      
-        <button type="submit" name="join" value="1">
-          <i data-lucide="users"></i> Join Room
-        </button>
-      
-        <button type="submit" name="create" value="1">
-          <i data-lucide="users"></i> Create Room
-        </button>
-      
-        <button type="submit" name="spectate" value="1">
-          <i data-lucide="eye"></i> Spectate
-        </button>
-      
-        <button type="submit" name="browse_rooms" value="1">
-          <i data-lucide="search"></i> Browse Room
-        </button>
-      </form>
+      <p class="form-msg">Join or create a room</p>
+      <input type="text" name="code" placeholder="Enter Room Code" />
+    
+      <button type="submit" name="play" value="1">
+        <i data-lucide="play"></i> Quick Play
+      </button>
+    
+      <button type="submit" name="join" value="1">
+        <i data-lucide="users"></i> Join Room
+      </button>
+    
+      <button type="submit" name="create" value="1">
+        <i data-lucide="users"></i> Create Room
+      </button>
+    
+      <button type="submit" name="spectate" value="1">
+        <i data-lucide="eye"></i> Spectate
+      </button>
+    
+      <button type="submit" name="browse_rooms" value="1">
+        <i data-lucide="search"></i> Browse Room
+      </button>
+    </form>
   </div>
 
-  <!-- Side Icons -->
-  <div class="side-icon side-icon-left top1">🏆</div>
+  <form method="POST" action="/home" style="all: unset;">
+    <button 
+      type="submit" 
+      name="leaderboard" 
+      value="1" 
+      class="side-icon side-icon-left top1" 
+      aria-label="Leaderboard"
+    >
+      🏆
+    </button>  
+  </form>
+  
+  <div class="side-icon side-icon-right top1">
+    <form action="/profile" method="get" style="all: unset;">
+      <button type="submit" title="Profile" class="side-button" style="font-size: 2.2rem; color: white; cursor: pointer; background: none; border: none;">
+        👤
+      </button>
+    </form>
+  </div>
+  
+  <!-- Add some styling to make the button look like a link -->
+  <style>
+    .side-button {
+      background: none; /* Remove background */
+      border: none; /* Remove border */
+      color: inherit; /* Use inherited text color */
+      font-size: 2rem; /* Adjust size as needed */
+      cursor: pointer; /* Make it clickable */
+      padding: 0; /* Remove padding */
+      margin: 0; /* Remove margin */
+      text-decoration: none; /* Ensure no underline */
+    }
+  </style>
+  
+  
   <div class="side-icon side-icon-left top2">⚔️</div>
   <div class="side-icon side-icon-left top3">📢</div>
-
-  <div class="side-icon side-icon-right top1">🛡️</div>
   <div class="side-icon side-icon-right top2">📅</div>
-  <div class="side-icon side-icon-right top3">❓</div>
+  <div class="side-icon side-icon-right top3">
+    <a href="rule.html" class="no-underline" aria-label="Open Rule Book">
+      ❓
+    </a>
+  </div>
+  
 
   <!-- Initialize Lucide Icons -->
   <script>

@@ -3,82 +3,798 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Room</title>
+    <title>HectoClash Game Room</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        body {
+            background-color: #0f0f1a;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glow-strip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(15deg);
+            width: 180%;
+            height: 280px;
+            background: radial-gradient(ellipse at center, rgba(181,139,255,0.2), transparent 70%);
+            filter: blur(35px);
+            z-index: 0;
+            animation: moveGlow 6s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveGlow {
+            0% { transform: translate(-50%, -50%) rotate(15deg); }
+            100% { transform: translate(-50%, -47%) rotate(15deg); }
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 0 0 25px #a78bfa, 0 0 45px #a78bfa;
+        }
+
+        .room-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .room-code {
+            font-size: 1.2rem;
+            text-shadow: 0 0 15px #a78bfa;
+        }
+
+        .watching-time {
+            font-size: 1rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .players-container {
+            width: 100%;
+            max-width: 1000px;
+            z-index: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .players {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-info .name {
+            font-weight: 700;
+        }
+
+        .player-info .elo {
+            font-size: 0.9rem;
+            color: #f1c40f;
+        }
+
+        .content-container {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            gap: 1.5rem;
+            z-index: 1;
+            flex-direction: row;
+        }
+
+        .game-area {
+            background: rgba(138, 100, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            flex: 3;
+            box-shadow: 0 0 35px rgba(138, 100, 255, 0.6);
+            backdrop-filter: blur(14px);
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+        }
+
+        .game-area h2 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .numbers {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .number-box {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.6);
+        }
+
+        /* Styled secret number display */
+        .secret-number-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .digit-box {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(167, 139, 250, 0.8);
+            border-radius: 12px;
+            width: 60px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f1c40f;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.6);
+        }
+
+        .input-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-area input {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: none;
+            width: 60%;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .input-area input::placeholder {
+            color: #ccc;
+        }
+
+        .input-area button {
+            background: linear-gradient(to right, #5f6bff, #8a64ff);
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(138, 100, 255, 0.4);
+        }
+
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .spectator-notice {
+            font-style: italic;
+            color: #a78bfa;
+            margin-bottom: 1rem;
+        }
+
+        .timer-display {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #f1c40f;
+        }
+
+        .message-display {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 15px #a78bfa;
+            display: none;
+        }
+
+        .game-timer {
+            font-size: 1.2rem;
+            margin-top: auto;
+            color: #f1c40f;
+        }
+
+        .chat-section {
+            background: rgba(138, 100, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            flex: 2;
+            box-shadow: 0 0 35px rgba(138, 100, 255, 0.6);
+            z-index: 1;
+            backdrop-filter: blur(14px);
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+        }
+
+        .chat-section h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chat-box {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-box p {
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+
+        .chat-box p b {
+            color: #a78bfa;
+        }
+
+        .chat-box p.my-message {
+            color: #a0e4ff;
+        }
+        
+        .chat-box p.opponent-message {
+            color: #f5a742;
+        }
+
+        .watchers {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .waiting-message {
+            font-size: 1.4rem;
+            text-align: center;
+            margin: 2rem 0;
+            color: #a78bfa;
+            text-shadow: 0 0 15px #a78bfa;
+        }
+
+        .game-code {
+            font-size: 2.5rem;
+            letter-spacing: 0.5rem;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.7);
+        }
+
+        .system-message {
+            color: #f1c40f;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .room-info {
+                align-items: center;
+            }
+            
+            .players {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .content-container {
+                flex-direction: column;
+            }
+            
+            .number-box {
+                padding: 0.6rem 0.8rem;
+                font-size: 1.5rem;
+            }
+            
+            .input-area input {
+                width: 80%;
+            }
+
+            .digit-box {
+                width: 40px;
+                height: 60px;
+                font-size: 2rem;
+            }
+        }
+
+        #countdown, #game-clock {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: #f1c40f;
+        }
+
+        .home-btn {
+            background: linear-gradient(to right, #5f6bff, #8a64ff);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(138, 100, 255, 0.4);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        /* New CSS for score display */
+        .score-display {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: #f1c40f;
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            font-weight: bold;
+        }
+
+        /* End game results display */
+        .game-results {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1rem auto;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(138, 100, 255, 0.8);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-announcement {
+            margin-bottom: 2rem;
+        }
+
+        .winner-name {
+            font-size: 2.5rem;
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .points-earned {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .time-taken {
+            font-size: 1.5rem;
+            color: #a78bfa;
+            margin-bottom: 1rem;
+        }
+
+        .follow-up-message {
+            font-size: 1.5rem;
+            color: #fff;
+            margin: 1.5rem 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
 </head>
 <body>
-    <h2>Room Code: {{ code }}</h2>
+    <div class="glow-strip"></div>
 
-    <h3>Players:</h3>
-    <ul id="players-list">
-        {% for player in players %}
-            <li>{{ player }}</li>
-        {% endfor %}
-    </ul>
+    <div class="header">
+        <div class="logo">🧠 HectoClash</div>
+        <div class="room-info">
+            <div class="room-code">Room Code: <span id="room-code">{{ code }}</span></div>
+            <div class="watching-time">
+                <div id="spectator-counter">👁️ <span id="spectator-count">0</span> watching</div>
+                <div>⏱️ <span id="game-time-display">--:--</span></div>
+            </div>
+        </div>
+    </div>
 
-    {% if spectator %}
-        <p style="color: gray;"><i>You are spectating this game. You cannot send messages.</i></p>
-    {% endif %}
+    <div class="players-container">
+        <div class="players" id="players-display">
+            <!-- Players will be dynamically inserted here -->
+        </div>
+    </div>
 
-    <h3>Game Status:</h3>
-    <p id="timer">Waiting for players...</p>
-    <h2 id="message"></h2>
+    <div class="content-container">
+        <div class="game-area">
+            {% if spectator %}
+            <div class="spectator-notice">You are spectating this game. You cannot participate.</div>
+            {% endif %}
+            
+            <h2>Arithmetic Challenge</h2>
+            
+            <div id="countdown">Waiting for players...</div>
+            
+            <!-- New secret number display with boxes -->
+            <div id="secret-number-display" class="secret-number-display" style="display: none;">
+                <!-- Digit boxes will be inserted here -->
+            </div>
+            
+            <div id="waiting-area">
+                <div class="waiting-message">
+                    {% if players|length < 2 %}
+                    Waiting for an opponent to join...
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div id="game-interface" style="display: none;">
+                <div class="input-area">
+                    <input type="text" id="solution-input" placeholder="Enter your solution..." {% if spectator %}disabled{% endif %}>
+                    <button id="submit-btn" {% if spectator %}disabled{% endif %}>Submit</button>
+                </div>
+                
+                <div class="score-display">Score: <span id="score-display">100</span></div>
+                <div id="game-clock">Time: <span id="timer-value">300</span>s</div>
+            </div>
+            
+            <!-- Game results display (initially hidden) -->
+            <div id="game-results" class="game-results">
+                <div class="result-announcement">
+                    <div class="winner-name" id="winner-display"></div>
+                    <div class="points-earned" id="points-display"></div>
+                    <div class="time-taken" id="time-display"></div>
+                </div>
+                <div id="follow-up-message" class="follow-up-message" style="display: none;">
+                    Ready for another challenge? Start a new game!
+                </div>
+                <a href="{{ url_for('home') }}" class="home-btn" style="display: none;" id="home-button">Back to Lobby</a>
+            </div>
+        </div>
 
-    <h3>Game Timer:</h3>
-    <h2 id="game-timer" style="display: none;">Time Left: <span id="game-time">300</span> seconds</h2>
+        <div class="chat-section">
+            <h3>Game Messages</h3>
+            <div id="message-box" class="chat-box">
+                {% for message in messages %}
+                    {% if message.type == 'system' %}
+                        <p class="system-message"><b>System:</b> {{ message.message }}</p>
+                    {% else %}
+                        <p class="{{ 'my-message' if message.name == username else 'opponent-message' }}"><b>{{ message.name }}:</b> {{ message.message }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-    <h3>Chat:</h3>
-    <div id="chat-box" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
-
-    {% if not spectator %}
-        <input type="text" id="chat-message" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
-    {% endif %}
+    <a href="{{ url_for('home') }}" class=""></a>
 
     <script>
-        var socket = io();
-        var isSpectator = {{ 'true' if spectator else 'false' }};
-
-        socket.on("update_players", function(data) {
-            var playersList = document.getElementById("players-list");
-            playersList.innerHTML = "";
-            data.players.forEach(player => {
-                playersList.innerHTML += `<li>${player}</li>`;
+        // Initialize variables
+        const socket = io();
+        const isSpectator = {{ 'true' if spectator else 'false' }};
+        let gameStarted = false;
+        let secretNumber = null;
+        const myUsername = "{{ username }}";  // Get current user's name from server
+        let timeElapsed = 0;
+        let currentScore = 100;
+        let scoreInterval;
+        
+        // Update players display
+        function updatePlayers(players) {
+            const playersDisplay = document.getElementById('players-display');
+            playersDisplay.innerHTML = '';
+            
+            if (players.length > 0) {
+                players.forEach((player, index) => {
+                    if (index < 2) {  // Only show up to 2 players
+                        const playerHTML = `
+                            <div class="player">
+                                <img src="/api/placeholder/60/60" alt="${player}">
+                                <div class="player-info">
+                                    <div class="name">${player}</div>
+                                    <div class="elo">🏆 ${1000 + Math.floor(Math.random() * 500)} ELO</div>
+                                </div>
+                            </div>
+                        `;
+                        playersDisplay.innerHTML += playerHTML;
+                    }
+                });
+                
+                // If we have 2 players, hide waiting message
+                if (players.length >= 2) {
+                    document.getElementById('waiting-area').style.display = 'none';
+                } else {
+                    document.getElementById('waiting-area').style.display = 'block';
+                }
+            }
+        }
+        
+        // Display secret number in boxes
+        function displaySecretNumber(number) {
+            const secretNumberDisplay = document.getElementById('secret-number-display');
+            secretNumberDisplay.innerHTML = '';
+            
+            // Show each digit in a box
+            for (let i = 0; i < number.length; i++) {
+                const digitBox = document.createElement('div');
+                digitBox.className = 'digit-box';
+                digitBox.textContent = number[i];
+                secretNumberDisplay.appendChild(digitBox);
+            }
+            
+            secretNumberDisplay.style.display = 'flex';
+        }
+        
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        // Add message to chat box
+        function addMessage(data) {
+            const messageBox = document.getElementById('message-box');
+            
+            // Modified: Show all messages (system messages and player messages)
+            const messageElement = document.createElement('p');
+            
+            if (data.type === 'system') {
+                messageElement.className = 'system-message';
+                messageElement.innerHTML = `<b>System:</b> ${data.message}`;
+            } else {
+                messageElement.className = data.name === myUsername ? 'my-message' : 'opponent-message';
+                messageElement.innerHTML = `<b>${data.name}:</b> ${data.message}`;
+            }
+            
+            messageBox.appendChild(messageElement);
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+        
+        // Calculate score based on time elapsed
+        function calculateScore() {
+            // Convert time thresholds to seconds
+            const threeMin = 180;  // 3 minutes in seconds
+            const fiveMin = 300;   // 5 minutes in seconds
+            const sevenMin = 420;  // 7 minutes in seconds
+            const tenMin = 600;    // 10 minutes in seconds
+            
+            // Calculate score based on time elapsed
+            if (timeElapsed <= threeMin) {
+                // 100 points within 3 minutes (linear decrease from 100 to 80)
+                currentScore = 100 - ((timeElapsed / threeMin) * 20);
+            } else if (timeElapsed <= fiveMin) {
+                // 80 points at 5 minutes (linear decrease from 80 to 50)
+                const fiveMinRatio = (timeElapsed - threeMin) / (fiveMin - threeMin);
+                currentScore = 80 - (fiveMinRatio * 30);
+            } else if (timeElapsed <= sevenMin) {
+                // 50 points at 7 minutes (linear decrease from 50 to 10)
+                const sevenMinRatio = (timeElapsed - fiveMin) / (sevenMin - fiveMin);
+                currentScore = 50 - (sevenMinRatio * 40);
+            } else if (timeElapsed <= tenMin) {
+                // 10 points at 10 minutes (linear decrease from 10 to 0)
+                const tenMinRatio = (timeElapsed - sevenMin) / (tenMin - sevenMin);
+                currentScore = 10 - (tenMinRatio * 10);
+            } else {
+                // 0 points after 10 minutes
+                currentScore = 0;
+            }
+            
+            // Round to integer
+            return Math.floor(currentScore);
+        }
+        
+        // Display game results 
+        function displayGameResults(winner, points, timeTaken) {
+            // Get game results elements
+            const gameResultsEl = document.getElementById('game-results');
+            const winnerEl = document.getElementById('winner-display');
+            const pointsEl = document.getElementById('points-display');
+            const timeEl = document.getElementById('time-display');
+            const followUpEl = document.getElementById('follow-up-message');
+            const homeButtonEl = document.getElementById('home-button');
+            
+            // Format time as minutes:seconds
+            const minutes = Math.floor(timeTaken / 60);
+            const seconds = timeTaken % 60;
+            const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            // Set the content
+            winnerEl.textContent = `${winner} wins!`;
+            pointsEl.textContent = `Points: ${points}`;
+            timeEl.textContent = `Time: ${formattedTime}`;
+            
+            // Show the results
+            gameResultsEl.style.display = 'block';
+            
+            // Set a delay for the follow-up message
+            setTimeout(() => {
+                followUpEl.style.display = 'block';
+                homeButtonEl.style.display = 'inline-block';
+            }, 3000);
+        }
+        
+        // Socket event listeners
+        socket.on('connect', function() {
+            console.log('Connected to server');
+            
+            // Initial players on page load
+            updatePlayers({{ players|tojson }});
+        });
+        
+        socket.on('update_players', function(data) {
+            updatePlayers(data.players);
+        });
+        
+        socket.on('spectator_joined', function(data) {
+            document.getElementById('spectator-count').innerText = data.count;
+        });
+        
+        socket.on('spectator_left', function(data) {
+            document.getElementById('spectator-count').innerText = data.count;
+        });
+        
+        socket.on('update_timer', function(data) {
+            document.getElementById('countdown').innerText = 'Game starts in: ' + data.time + 's';
+            document.getElementById('game-time-display').innerText = formatTime(data.time);
+        });
+        
+        socket.on('game_start', function(data) {
+            gameStarted = true;
+            document.getElementById('countdown').style.display = 'none';
+            document.getElementById('waiting-area').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'block';
+            
+            // Display the secret number and add to message box
+            secretNumber = data.message.split(': ')[1];
+            displaySecretNumber(secretNumber);
+            
+            // Add system message
+            addMessage({
+                type: 'system',
+                message: data.message
+            });
+            
+            // Initialize scoring system
+            timeElapsed = 0;
+            currentScore = 100;
+            document.getElementById('score-display').textContent = currentScore;
+            
+            // Start score tracking
+            scoreInterval = setInterval(() => {
+                timeElapsed++;
+                currentScore = calculateScore();
+                document.getElementById('score-display').textContent = currentScore;
+                
+                // Stop tracking if score reaches 0
+                if (currentScore <= 0) {
+                    clearInterval(scoreInterval);
+                }
+            }, 1000);
+        });
+        
+        socket.on('update_game_timer', function(data) {
+            document.getElementById('timer-value').innerText = data.time;
+            document.getElementById('game-time-display').innerText = formatTime(data.time);
+        });
+        
+        socket.on('message', function(data) {
+            addMessage(data);
+        });
+        
+        socket.on('game_over', function(data) {
+            gameStarted = false;
+            document.getElementById('countdown').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'none';
+            
+            // Stop score tracking
+            clearInterval(scoreInterval);
+            
+            // Parse winner from message (this may need to be adjusted based on your message format)
+            let winner = data.winner || data.message.split(' ')[0] || "Player";
+            let points = currentScore;
+            let timeTaken = timeElapsed;
+            
+            // Display end game results
+            displayGameResults(winner, points, timeTaken);
+            
+            // Still add to message box
+            addMessage({
+                type: 'system',
+                message: data.message
             });
         });
-
-        socket.on("update_timer", function(data) {
-            document.getElementById("timer").innerText = "Game starts in: " + data.time + "s";
+        
+        socket.on('player_left', function(data) {
+            addMessage({
+                type: 'system',
+                message: data.message
+            });
         });
-
-        socket.on("game_start", function(data) {
-            document.getElementById("timer").innerText = "Game Started!";
-            document.getElementById("message").innerText = data.message;
-            document.getElementById("game-timer").style.display = "block";
-        });
-
-        socket.on("update_game_timer", function(data) {
-            document.getElementById("game-time").innerText = data.time;
-        });
-
-        socket.on("game_over", function(data) {
-            document.getElementById("game-timer").style.display = "none";
-            document.getElementById("message").innerText = data.message;
-        });
-
-        socket.on("message", function(data) {
-            var chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += `<p><b>${data.name}:</b> ${data.message}</p>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        function sendMessage() {
+        
+        // Submit button event listener
+        document.getElementById('submit-btn').addEventListener('click', function() {
             if (isSpectator) return;
-            var message = document.getElementById("chat-message").value;
-            if (message.trim() === "") return;
-            socket.emit("message", { message: message });
-            document.getElementById("chat-message").value = "";
-        }
+            
+            const input = document.getElementById('solution-input').value.trim();
+            if (input === '') return;
+            
+            socket.emit('message', { 
+                message: input,
+                name: myUsername,
+                score: currentScore // Include current score with message
+            });
+            document.getElementById('solution-input').value = '';
+        });
+        
+        // Enter key event listener for input
+        document.getElementById('solution-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('submit-btn').click();
+            }
+        });
     </script>
 </body>
 </html>
