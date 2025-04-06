@@ -554,7 +554,7 @@
                                 <img src="/api/placeholder/60/60" alt="${player}">
                                 <div class="player-info">
                                     <div class="name">${player}</div>
-                                    <div class="elo">🏆 ${1000 + Math.floor(Math.random() * 500)} ELO</div>
+                                    
                                 </div>
                             </div>
                         `;
@@ -563,7 +563,7 @@
                 });
                 
                 // If we have 2 players, hide waiting message
-                if (players.length >= 2) {
+                if (players.length >= 2  || isSpectator) {
                     document.getElementById('waiting-area').style.display = 'none';
                 } else {
                     document.getElementById('waiting-area').style.display = 'block';
