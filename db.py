@@ -1,25 +1,15 @@
+import os
 import psycopg2
+import psycopg2.extras
 import bcrypt
-from psycopg2 import pool
-
-
-# hostname = "localhost"
-# database = "hectoc"
-# username = "ace"
-# password = "palak1411"
-# port_id = 5432
 
 
 def get_db_connection():
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="secrets",
-            user="postgres",
-            password="your_new_password",
-            port=5432
-        )
-        return conn
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url is None:
+            raise ValueError("DATABASE_URL not set in environment variables")
+        return psycopg2.connect(db_url, sslmode='require')
     except Exception as e:
         print(f"Database connection error: {e}")
         return None
@@ -29,123 +19,93 @@ def create_table():
     conn = None
     cur = None
     try:
-        conn = psycopg2.connect(
-        dbname="secrets",
-        user="postgres",
-        password="your_new_password",
-        host="localhost",
-        port="5432")
-        
+        conn = get_db_connection()
+        if conn is None:
+            return
         cur = conn.cursor()
-        
         create_script = '''CREATE TABLE IF NOT EXISTS player(
-                            id          SERIAL PRIMARY KEY,
-                            name        varchar(160) NOT NULL,
-                            email       varchar(160) NOT NULL,
-                            password    varchar(160) NOT NULL,
-                            score       int)'''
-                            
-        cur.execute(create_script)    
+                            id SERIAL PRIMARY KEY,
+                            name VARCHAR(160) NOT NULL,
+                            email VARCHAR(160) NOT NULL,
+                            password VARCHAR(160) NOT NULL,
+                            score INT)'''
+        cur.execute(create_script)
         conn.commit()
     except Exception as error:
-        print(error) 
-    finally:
-        if cur is not None:
-            cur.close()
-        if conn is not None:        
-            conn.close()
-
-def is_email_exists(email):
-    conn = None
-    cur = None
-    try:
-        conn = psycopg2.connect(
-       host="localhost",
-    database="secrets",
-    user="postgres",
-    password="your_new_password",
-    port=5432)
-        
-        cur = conn.cursor()
-        
-        # Query to check if email exists
-        query = "SELECT COUNT(*) FROM player WHERE email = %s"
-        cur.execute(query, (email,))
-        
-        # Fetch the result (will be a tuple with one item)
-        count = cur.fetchone()[0]
-        
-        # If count > 0, email exists
-        return count > 0
-        
-    except Exception as error:
-        print(f"Error checking email existence: {error}")
-        return False  # Return False on error
+        print(error)
     finally:
         if cur is not None:
             cur.close()
         if conn is not None:
             conn.close()
-                                    
+
+
+def is_email_exists(email):
+    conn = None
+    cur = None
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return False
+        cur = conn.cursor()
+        query = "SELECT COUNT(*) FROM player WHERE email = %s"
+        cur.execute(query, (email,))
+        count = cur.fetchone()[0]
+        return count > 0
+    except Exception as error:
+        print(f"Error checking email existence: {error}")
+        return False
+    finally:
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()
+
+
 def store(name, email, password):
     conn = None
     cur = None
-    conn = psycopg2.connect(
-    host="localhost",
-    database="secrets",
-    user="postgres",
-    password="your_new_password",
-    port=5432)
-        
-    cur = conn.cursor()
-    score=0
-    if is_email_exists(email):
-        print("error")
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return False
+        cur = conn.cursor()
+        score = 0
+        if is_email_exists(email):
+            print("error")
+            return False
+        else:
+            insert_script = 'INSERT INTO player(name, email, password, score) VALUES (%s, %s, %s, %s)'
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            insert_value = (name, email, hashed_password.decode('utf-8'), score)
+            cur.execute(insert_script, insert_value)
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error storing user: {e}")
         return False
-    else:
-        insert_script = 'INSERT INTO player(name, email, password, score) VALUES (%s, %s, %s, %s)'
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    finally:
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()
 
-        insert_value = (name, email, hashed_password.decode('utf-8'), score)
 
-
-        cur.execute(insert_script, insert_value)
-        conn.commit()
-        return True
-         # Indicate registration succeeded
-
-    cur.close()
-        
-    conn.close()
-      
-            
 def valid_user(email, password):
     conn = None
     cur = None
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="secrets",
-            user="postgres",
-            password="your_new_password",
-            port=5432
-        )
-        
+        conn = get_db_connection()
+        if conn is None:
+            return False
         cur = conn.cursor()
-        
-        # Get stored hashed password for the given email
         query = "SELECT password FROM player WHERE email = %s"
         cur.execute(query, (email,))
         result = cur.fetchone()
-        
         if result is None:
-            return False  # Email not found
-
-        stored_password = result[0].encode('utf-8')  # Stored hash in DB
-
-        # Compare user input password with stored hash
+            return False
+        stored_password = result[0].encode('utf-8')
         return bcrypt.checkpw(password.encode('utf-8'), stored_password)
-
     except Exception as error:
         print(f"Error validating user: {error}")
         return False
@@ -156,34 +116,22 @@ def valid_user(email, password):
             conn.close()
 
 
-
 def can_register(email):
-    return is_email_exists(email)    
+    return not is_email_exists(email)
+
 
 def getname(email):
     conn = None
     cur = None
     try:
-        conn = psycopg2.connect(
-    host="localhost",
-    database="secrets",
-    user="postgres",
-    password="your_new_password",
-    port=5432
-        )
-        
+        conn = get_db_connection()
+        if conn is None:
+            return None
         cur = conn.cursor()
-        
-        # Query to get name for the given email
         query = "SELECT name FROM player WHERE email = %s"
         cur.execute(query, (email,))
         result = cur.fetchone()
-        
-        if result is None:
-            return None  # Email not found
-        else:
-            return result[0]  # Return the name
-
+        return result[0] if result else None
     except Exception as error:
         print(f"Error getting name: {error}")
         return None
@@ -193,51 +141,42 @@ def getname(email):
         if conn is not None:
             conn.close()
 
+
 def fetch_user_by_email(email):
     conn = get_db_connection()
     if conn is None:
         return None, "Database connection failed."
-
     try:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute("SELECT * FROM player WHERE email = %s", (email,))
         user = cursor.fetchone()
         return user, None
+    except Exception as e:
+        return None, str(e)
     finally:
         cursor.close()
         conn.close()
-        
+
+
 def update_user_score(email, score):
-    """Update the user's score by adding the new score to their existing score"""
     conn = None
     cur = None
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="secrets",
-            user="postgres",
-            password="your_new_password",
-            port=5432
-        )
-        
+        conn = get_db_connection()
+        if conn is None:
+            return False
         cur = conn.cursor()
-        
-        # First, get the current score
         query = "SELECT score FROM player WHERE email = %s"
         cur.execute(query, (email,))
         result = cur.fetchone()
-        
         if result is not None:
             current_score = result[0] if result[0] is not None else 0
             new_score = current_score + score
-            
-            # Update the score in the database
             update_query = "UPDATE player SET score = %s WHERE email = %s"
             cur.execute(update_query, (new_score, email))
             conn.commit()
             print(f"Updated score for {email}: {current_score} + {score} = {new_score}")
             return True
-        
         return False
     except Exception as error:
         print(f"Error updating score: {error}")
@@ -246,5 +185,4 @@ def update_user_score(email, score):
         if cur is not None:
             cur.close()
         if conn is not None:
-            conn.close()        
-    
+            conn.close()
