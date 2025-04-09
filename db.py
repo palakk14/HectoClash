@@ -40,9 +40,9 @@ def create_table():
         
         create_script = '''CREATE TABLE IF NOT EXISTS player(
                             id          SERIAL PRIMARY KEY,
-                            name        varchar(40) NOT NULL,
-                            email       varchar(40) NOT NULL,
-                            password    varchar(40) NOT NULL,
+                            name        varchar(160) NOT NULL,
+                            email       varchar(160) NOT NULL,
+                            password    varchar(160) NOT NULL,
                             score       int)'''
                             
         cur.execute(create_script)    
@@ -104,7 +104,11 @@ def store(name, email, password):
         return False
     else:
         insert_script = 'INSERT INTO player(name, email, password, score) VALUES (%s, %s, %s, %s)'
-        insert_value = (name, email, password, score)
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        insert_value = (name, email, hashed_password.decode('utf-8'), score)
+
+
         cur.execute(insert_script, insert_value)
         conn.commit()
         return True
@@ -120,16 +124,16 @@ def valid_user(email, password):
     cur = None
     try:
         conn = psycopg2.connect(
-    host="localhost",
-    database="secrets",
-    user="postgres",
-    password="your_new_password",
-    port=5432
+            host="localhost",
+            database="secrets",
+            user="postgres",
+            password="your_new_password",
+            port=5432
         )
         
         cur = conn.cursor()
         
-        # Query to get password for the given email
+        # Get stored hashed password for the given email
         query = "SELECT password FROM player WHERE email = %s"
         cur.execute(query, (email,))
         result = cur.fetchone()
@@ -137,9 +141,10 @@ def valid_user(email, password):
         if result is None:
             return False  # Email not found
 
-        stored_password = result[0]
+        stored_password = result[0].encode('utf-8')  # Stored hash in DB
 
-        return stored_password == password  # Plaintext comparison
+        # Compare user input password with stored hash
+        return bcrypt.checkpw(password.encode('utf-8'), stored_password)
 
     except Exception as error:
         print(f"Error validating user: {error}")
@@ -149,6 +154,7 @@ def valid_user(email, password):
             cur.close()
         if conn is not None:
             conn.close()
+
 
 
 def can_register(email):

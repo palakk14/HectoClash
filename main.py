@@ -41,7 +41,7 @@ def register():
                 session["name"] = name
                 session["email"] = email
                 session.pop("spectator", None)
-                return redirect(url_for('home')) 
+                return redirect(url_for('login')) 
         else:
             flash("user already exists")
             return redirect(url_for('login')) 
